@@ -6,6 +6,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { AllExceptionsFilter } from './common/errors/all-exceptions.filter';
 import { envSchema } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
+import { HealthModule } from './health/health.module';
 import { UnitsModule } from './units/units.module';
 
 @Module({
@@ -32,6 +33,7 @@ import { UnitsModule } from './units/units.module';
     }),
     DatabaseModule,
     UnitsModule,
+    HealthModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
 })
