@@ -80,7 +80,7 @@ export class WorkoutHistoryService {
   ): HistoryResponse {
     const setsByEntry = new Map<string, HistorySetRow[]>();
     for (const set of sets) {
-      setsByEntry.set(set.entry_id, [...(setsByEntry.get(set.entry_id) ?? []), set]);
+      setsByEntry.set(set.entryId, [...(setsByEntry.get(set.entryId) ?? []), set]);
     }
     const data = page.map((row) => ({
       id: row.id,
@@ -94,7 +94,7 @@ export class WorkoutHistoryService {
         weight:
           set.unit === query.unit
             ? Number(set.weight)
-            : this.units.fromKg(Number(set.weight_kg), query.unit),
+            : this.units.fromKg(Number(set.weightKg), query.unit),
         unit: query.unit,
         originalWeight: Number(set.weight),
         originalUnit: set.unit,

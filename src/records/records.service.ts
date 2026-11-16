@@ -95,10 +95,11 @@ export class RecordsService {
     from?: string,
     to?: string,
   ): Promise<PeriodSummary> {
-    const rows =
-      from !== undefined && to !== undefined
-        ? await this.records.findInRange(userId, exerciseId, from, to)
-        : await this.records.findAllTime(userId, exerciseId);
+    const rows = await this.records.findBest(
+      userId,
+      exerciseId,
+      from !== undefined && to !== undefined ? { from, to } : undefined,
+    );
     return { from: from ?? null, to: to ?? null, ...buildPeriodRecords(rows, unit, this.units) };
   }
 }

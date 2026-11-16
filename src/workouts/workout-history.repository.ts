@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
+import { WorkoutEntry, WorkoutSet } from '../database/entities';
 import { HistoryCursor } from './history-cursor';
 
 export interface HistoryEntryRow {
@@ -11,13 +13,7 @@ export interface HistoryEntryRow {
   utc_offset_minutes: number | null;
 }
 
-export interface HistorySetRow {
-  entry_id: string;
-  reps: number;
-  weight: string;
-  unit: string;
-  weight_kg: string;
-}
+export type HistorySetRow = Pick<WorkoutSet, 'entryId' | 'reps' | 'weight' | 'unit' | 'weightKg'>;
 
 export interface HistoryFilter {
   userId: string;
@@ -30,50 +26,56 @@ export interface HistoryFilter {
 
 @Injectable()
 export class WorkoutHistoryRepository {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(WorkoutEntry) private readonly entries: Repository<WorkoutEntry>,
+    @InjectRepository(WorkoutSet) private readonly sets: Repository<WorkoutSet>,
+  ) {}
 
-  async findEntries(filter: HistoryFilter): Promise<HistoryEntryRow[]> {
-    const params: unknown[] = [filter.userId];
-    const where = ['e.user_id = $1'];
-    const bind = (value: unknown) => {
-      params.push(value);
-      return `$${params.length}`;
-    };
+  findEntries(filter: HistoryFilter): Promise<HistoryEntryRow[]> {
+    const query = this.entries
+      .createQueryBuilder('e')
+      .innerJoin('e.exercise', 'x')
+      .select('e.id', 'id')
+      .addSelect('x.name', 'exercise_name')
+      .addSelect('x.muscleGroups', 'muscle_groups')
+      .addSelect('e.localDate', 'local_date')
+      .addSelect(
+        `to_char(e.performed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`,
+        'performed_at',
+      )
+      .addSelect('e.utcOffsetMinutes', 'utc_offset_minutes')
+      .where('e.userId = :userId', { userId: filter.userId });
     if (filter.exerciseIds?.length === 1) {
-      where.push(`e.exercise_id = ${bind(filter.exerciseIds[0])}::uuid`);
+      query.andWhere('e.exerciseId = :exerciseId', { exerciseId: filter.exerciseIds[0] });
+    } else if (filter.exerciseIds !== undefined && filter.exerciseIds.length > 1) {
+      query.andWhere('e.exerciseId IN (:...exerciseIds)', { exerciseIds: filter.exerciseIds });
     }
-    if (filter.exerciseIds !== undefined && filter.exerciseIds.length > 1) {
-      where.push(`e.exercise_id = ANY(${bind(filter.exerciseIds)}::uuid[])`);
-    }
-    if (filter.from !== undefined) where.push(`e.local_date >= ${bind(filter.from)}::date`);
-    if (filter.to !== undefined) where.push(`e.local_date <= ${bind(filter.to)}::date`);
+    if (filter.from !== undefined) query.andWhere('e.localDate >= :from', { from: filter.from });
+    if (filter.to !== undefined) query.andWhere('e.localDate <= :to', { to: filter.to });
     if (filter.cursor !== undefined) {
-      const { localDate, performedAt, id } = filter.cursor;
-      where.push(
-        `(e.local_date, e.performed_at, e.id) < (${bind(localDate)}::date, ${bind(performedAt)}::timestamptz, ${bind(id)}::uuid)`,
+      query.andWhere(
+        '(e.localDate, e.performedAt, e.id) < (CAST(:cursorDate AS date), CAST(:cursorAt AS timestamptz), CAST(:cursorId AS uuid))',
+        {
+          cursorDate: filter.cursor.localDate,
+          cursorAt: filter.cursor.performedAt,
+          cursorId: filter.cursor.id,
+        },
       );
     }
-    const limit = bind(filter.limit + 1);
-    return this.dataSource.query(
-      `SELECT e.id, x.name AS exercise_name, x.muscle_groups, e.local_date,
-              to_char(e.performed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS performed_at,
-              e.utc_offset_minutes
-       FROM workout_entries e
-       JOIN exercises x ON x.id = e.exercise_id
-       WHERE ${where.join(' AND ')}
-       ORDER BY e.local_date DESC, e.performed_at DESC, e.id DESC
-       LIMIT ${limit}`,
-      params,
-    );
+    return query
+      .orderBy('e.localDate', 'DESC')
+      .addOrderBy('e.performedAt', 'DESC')
+      .addOrderBy('e.id', 'DESC')
+      .limit(filter.limit + 1)
+      .getRawMany<HistoryEntryRow>();
   }
 
-  async findSets(entryIds: string[]): Promise<HistorySetRow[]> {
-    if (entryIds.length === 0) return [];
-    return this.dataSource.query(
-      `SELECT entry_id, reps, weight::text AS weight, unit, weight_kg::text AS weight_kg
-       FROM workout_sets WHERE entry_id = ANY($1::uuid[])
-       ORDER BY entry_id, set_index`,
-      [entryIds],
-    );
+  findSets(entryIds: string[]): Promise<HistorySetRow[]> {
+    if (entryIds.length === 0) return Promise.resolve([]);
+    return this.sets.find({
+      select: { entryId: true, reps: true, weight: true, unit: true, weightKg: true },
+      where: { entryId: In(entryIds) },
+      order: { entryId: 'ASC', setIndex: 'ASC' },
+    });
   }
 }

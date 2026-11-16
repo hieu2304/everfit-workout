@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { WorkoutEntry, WorkoutSet } from '../database/entities';
 import { ExercisesModule } from '../exercises/exercises.module';
 import { IdempotencyStore } from './idempotency.store';
 import { WorkoutHistoryController } from './workout-history.controller';
@@ -9,7 +11,7 @@ import { WorkoutsRepository } from './workouts.repository';
 import { WorkoutsService } from './workouts.service';
 
 @Module({
-  imports: [ExercisesModule],
+  imports: [ExercisesModule, TypeOrmModule.forFeature([WorkoutEntry, WorkoutSet])],
   controllers: [WorkoutsController, WorkoutHistoryController],
   providers: [
     WorkoutsService,

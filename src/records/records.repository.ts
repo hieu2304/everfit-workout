@@ -1,42 +1,58 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { WorkoutSet } from '../database/entities';
 import { RECORD_METRICS, RecordMetric, RecordRow } from './records.types';
 
-const METRIC_COLUMN: Record<RecordMetric, string> = {
-  maxWeight: 'weight_kg',
-  maxVolume: 'volume_kg',
-  bestE1rm: 'e1rm_kg',
+const METRIC_PROPERTY: Record<RecordMetric, 'weightKg' | 'volumeKg' | 'e1rmKg'> = {
+  maxWeight: 'weightKg',
+  maxVolume: 'volumeKg',
+  bestE1rm: 'e1rmKg',
 };
 
-const bestOf = (metric: RecordMetric, source: string) => {
-  const column = METRIC_COLUMN[metric];
-  return `(SELECT '${metric}' AS metric, ${column}::text AS value_kg, weight_kg::text AS weight_kg, reps, local_date
-           FROM ${source}
-           ORDER BY ${column} DESC, performed_at ASC, id ASC
-           LIMIT 1)`;
-};
+export interface DateRange {
+  from: string;
+  to: string;
+}
 
 @Injectable()
 export class RecordsRepository {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(@InjectRepository(WorkoutSet) private readonly sets: Repository<WorkoutSet>) {}
 
-  findAllTime(userId: string, exerciseId: string): Promise<RecordRow[]> {
-    const source = 'workout_sets WHERE user_id = $1 AND exercise_id = $2';
-    return this.dataSource.query(
-      RECORD_METRICS.map((metric) => bestOf(metric, source)).join(' UNION ALL '),
-      [userId, exerciseId],
+  async findBest(userId: string, exerciseId: string, range?: DateRange): Promise<RecordRow[]> {
+    const rows = await Promise.all(
+      RECORD_METRICS.map((metric) => this.findBestFor(metric, userId, exerciseId, range)),
     );
+    return rows.filter((row): row is RecordRow => row !== null);
   }
 
-  findInRange(userId: string, exerciseId: string, from: string, to: string): Promise<RecordRow[]> {
-    return this.dataSource.query(
-      `WITH ranged AS MATERIALIZED (
-         SELECT weight_kg, volume_kg, e1rm_kg, reps, local_date, performed_at, id
-         FROM workout_sets
-         WHERE user_id = $1 AND exercise_id = $2 AND local_date BETWEEN $3::date AND $4::date
-       )
-       ${RECORD_METRICS.map((metric) => bestOf(metric, 'ranged')).join(' UNION ALL ')}`,
-      [userId, exerciseId, from, to],
-    );
+  private async findBestFor(
+    metric: RecordMetric,
+    userId: string,
+    exerciseId: string,
+    range?: DateRange,
+  ): Promise<RecordRow | null> {
+    const property = METRIC_PROPERTY[metric];
+    const query = this.sets
+      .createQueryBuilder('s')
+      .where('s.userId = :userId', { userId })
+      .andWhere('s.exerciseId = :exerciseId', { exerciseId });
+    if (range !== undefined) {
+      query.andWhere('s.localDate BETWEEN :from AND :to', range);
+    }
+    const best = await query
+      .orderBy(`s.${property}`, 'DESC')
+      .addOrderBy('s.performedAt', 'ASC')
+      .addOrderBy('s.id', 'ASC')
+      .limit(1)
+      .getOne();
+    if (best === null) return null;
+    return {
+      metric,
+      value_kg: best[property],
+      weight_kg: best.weightKg,
+      reps: best.reps,
+      local_date: best.localDate,
+    };
   }
 }
