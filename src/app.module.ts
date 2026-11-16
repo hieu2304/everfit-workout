@@ -8,6 +8,7 @@ import { envSchema } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { ExercisesModule } from './exercises/exercises.module';
 import { HealthModule } from './health/health.module';
+import { RecordsModule } from './records/records.module';
 import { UnitsModule } from './units/units.module';
 import { WorkoutsModule } from './workouts/workouts.module';
 
@@ -40,6 +41,7 @@ import { WorkoutsModule } from './workouts/workouts.module';
     HealthModule,
     ExercisesModule,
     WorkoutsModule,
+    RecordsModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
 })
