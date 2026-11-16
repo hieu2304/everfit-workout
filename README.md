@@ -49,6 +49,13 @@ npm run test:int    # integration tests against a throwaway Postgres 16 via Test
 npm run lint
 ```
 
+## AI tooling
+
+`CLAUDE.md` and `.claude/` hold the context the AI agent works with: project rules (code style, architecture,
+database, testing, git) in `.claude/rules/`, project skills (`add-endpoint`, `add-weight-unit`, `run-benchmark`)
+and vetted third-party skills (see `.claude/skills/THIRD_PARTY.md`) in `.claude/skills/`, and tool permissions in
+`.claude/settings.json`.
+
 ## Architecture
 
 ```mermaid
