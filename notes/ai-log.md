@@ -11,3 +11,4 @@
 | 7 | Design | Benchmark target | "p95 < 50 ms with autocannon" | autocannon reports p97.5/p99, no p95 | Audit agent checked autocannon README | Target p99, report p50/p97.5/p99 | plan |
 | 8 | Chat | Explain the "bỏ" confusion | AI said "bỏ" referred to Kafka | False: its own question wrongly said I had dropped Idempotency-Key | Audit agent read transcript | Corrected in chat | — |
 | 9 | Task 1 | Unit tests per plan | Plan omitted Jest `setupFiles: ["reflect-metadata"]` | `@Type` crashed: `Reflect.getMetadata is not a function` | Running the test | Added setupFiles to unit and int Jest configs | task 1 |
+| 10 | Task 7 | Use `uuid@10` per plan | Assumed uuid 10 ships types | TS7016: no declaration file for `uuid` | ts-jest compile error | Added `@types/uuid@10` | task 7 |
