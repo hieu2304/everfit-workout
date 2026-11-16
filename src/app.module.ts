@@ -5,6 +5,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
 import { AllExceptionsFilter } from './common/errors/all-exceptions.filter';
 import { envSchema } from './config/env.validation';
+import { UnitsModule } from './units/units.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { envSchema } from './config/env.validation';
         },
       }),
     }),
+    UnitsModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
 })
