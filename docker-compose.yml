@@ -15,5 +15,18 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  api:
+    build: .
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      LOG_LEVEL: info
+      DATABASE_URL: postgres://everfit:everfit@db:5432/everfit
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:
