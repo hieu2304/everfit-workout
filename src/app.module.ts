@@ -28,7 +28,9 @@ import { UnitsModule } from './units/units.module';
             return id;
           },
           transport:
-            config.get<string>('NODE_ENV') === 'development' ? { target: 'pino-pretty' } : undefined,
+            config.get<string>('NODE_ENV') === 'development'
+              ? { target: 'pino-pretty' }
+              : undefined,
         },
       }),
     }),

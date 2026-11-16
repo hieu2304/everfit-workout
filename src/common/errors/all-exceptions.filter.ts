@@ -5,9 +5,7 @@ import { toErrorResponse } from './error-response';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(
-    @InjectPinoLogger(AllExceptionsFilter.name) private readonly logger: PinoLogger,
-  ) {}
+  constructor(@InjectPinoLogger(AllExceptionsFilter.name) private readonly logger: PinoLogger) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const http = host.switchToHttp();
