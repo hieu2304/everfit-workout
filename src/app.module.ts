@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { ExercisesModule } from './exercises/exercises.module';
 import { HealthModule } from './health/health.module';
 import { UnitsModule } from './units/units.module';
+import { WorkoutsModule } from './workouts/workouts.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { UnitsModule } from './units/units.module';
     UnitsModule,
     HealthModule,
     ExercisesModule,
+    WorkoutsModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
 })
