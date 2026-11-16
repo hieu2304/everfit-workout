@@ -1,4 +1,5 @@
 import { v7 as uuidv7 } from 'uuid';
+import { multiplyDecimals } from '../common/decimal';
 import { parseWorkoutDate } from '../common/dates/workout-date';
 import { normalizeExerciseName } from '../exercises/exercise-name';
 import { ExerciseRef } from '../exercises/exercises.repository';
@@ -11,7 +12,7 @@ export interface PlannedSet {
   reps: number;
   weight: string;
   unit: string;
-  factorToKg: string;
+  weightKg: string;
 }
 
 export interface PlannedEntry {
@@ -47,13 +48,16 @@ export const buildInsertPlan = (
       performedAt: when.performedAt,
       localDate: when.localDate,
       utcOffsetMinutes: when.utcOffsetMinutes,
-      sets: entry.sets.map((set, index) => ({
-        id: uuidv7(),
-        setIndex: index,
-        reps: set.reps,
-        weight: String(set.weight),
-        unit: set.unit,
-        factorToKg: units.factorToKg(set.unit),
-      })),
+      sets: entry.sets.map((set, index) => {
+        const weight = String(set.weight);
+        return {
+          id: uuidv7(),
+          setIndex: index,
+          reps: set.reps,
+          weight,
+          unit: set.unit,
+          weightKg: multiplyDecimals(weight, units.factorToKg(set.unit)),
+        };
+      }),
     };
   });

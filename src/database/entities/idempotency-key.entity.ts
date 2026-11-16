@@ -15,7 +15,7 @@ export class IdempotencyKey {
   statusCode!: number | null;
 
   @Column('jsonb', { name: 'response_body', nullable: true })
-  responseBody!: unknown;
+  responseBody!: object | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;

@@ -40,14 +40,15 @@ export class WorkoutsService {
         if (stored !== null) {
           return {
             statusCode: stored.statusCode,
-            body: stored.body as LogWorkoutsResponse,
+            body: stored.body as unknown as LogWorkoutsResponse,
             replayed: true,
           };
         }
       }
       const plan = buildInsertPlan(userId, dto, exerciseByKey, this.units);
       await this.workouts.insertEntries(manager, plan);
-      const body = toLoggedResponse(plan, await this.workouts.insertSets(manager, plan));
+      await this.workouts.insertSets(manager, plan);
+      const body = toLoggedResponse(plan);
       if (idempotencyKey !== undefined) {
         await this.idempotency.complete(manager, userId, idempotencyKey, {
           statusCode: HttpStatus.CREATED,

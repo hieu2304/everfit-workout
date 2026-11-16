@@ -21,10 +21,7 @@ export interface LogWorkoutsResponse {
   data: LoggedEntry[];
 }
 
-export const toLoggedResponse = (
-  plan: PlannedEntry[],
-  weightKgBySetId: Map<string, string>,
-): LogWorkoutsResponse => ({
+export const toLoggedResponse = (plan: PlannedEntry[]): LogWorkoutsResponse => ({
   data: plan.map((entry) => ({
     id: entry.id,
     exerciseName: entry.exerciseName,
@@ -35,7 +32,7 @@ export const toLoggedResponse = (
       reps: set.reps,
       weight: Number(set.weight),
       unit: set.unit,
-      weightKg: round2(Number(weightKgBySetId.get(set.id))),
+      weightKg: round2(Number(set.weightKg)),
     })),
   })),
 });
