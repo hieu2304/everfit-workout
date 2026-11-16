@@ -1,0 +1,17 @@
+[
+  { "name": "Bench Press", "muscleGroups": ["chest", "triceps", "shoulders"] },
+  { "name": "Incline Bench Press", "muscleGroups": ["chest", "shoulders", "triceps"] },
+  { "name": "Overhead Press", "muscleGroups": ["shoulders", "triceps"] },
+  { "name": "Back Squat", "muscleGroups": ["legs", "glutes"] },
+  { "name": "Front Squat", "muscleGroups": ["legs", "core"] },
+  { "name": "Deadlift", "muscleGroups": ["back", "legs", "glutes"] },
+  { "name": "Romanian Deadlift", "muscleGroups": ["legs", "glutes", "back"] },
+  { "name": "Barbell Row", "muscleGroups": ["back", "biceps"] },
+  { "name": "Pull Up", "muscleGroups": ["back", "biceps"] },
+  { "name": "Lat Pulldown", "muscleGroups": ["back", "biceps"] },
+  { "name": "Leg Press", "muscleGroups": ["legs", "glutes"] },
+  { "name": "Bicep Curl", "muscleGroups": ["biceps"] },
+  { "name": "Tricep Pushdown", "muscleGroups": ["triceps"] },
+  { "name": "Hip Thrust", "muscleGroups": ["glutes", "legs"] },
+  { "name": "Plank", "muscleGroups": ["core"] }
+]

@@ -16,11 +16,9 @@ describe('schema', () => {
 
   beforeEach(async () => {
     await resetDatabase(app);
-    exerciseId = uuidv7();
     entryId = uuidv7();
-    await db.query(
-      `INSERT INTO exercises (id, name, normalized_name) VALUES ($1, 'Bench Press', 'bench press')`,
-      [exerciseId],
+    [{ id: exerciseId }] = await db.query(
+      `SELECT id FROM exercises WHERE normalized_name = 'bench press'`,
     );
     await db.query(
       `INSERT INTO workout_entries (id, user_id, exercise_id, performed_at, local_date)
