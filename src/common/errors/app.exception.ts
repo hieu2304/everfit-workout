@@ -17,5 +17,5 @@ export class AppException extends HttpException {
   }
 }
 
-export const validationFailed = (details: ErrorDetail[]) =>
+export const validationFailed = (details: ErrorDetail[]): AppException =>
   new AppException(400, ErrorCode.VALIDATION_FAILED, 'Request validation failed', details);
