@@ -1,3 +1,4 @@
+import { ApiTags, ApiHeader } from '@nestjs/swagger';
 import { Body, Controller, Headers, Param, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { validationFailed } from '../common/errors/app.exception';
@@ -8,11 +9,17 @@ import { WorkoutsService } from './workouts.service';
 
 const MAX_IDEMPOTENCY_KEY_LENGTH = 255;
 
+@ApiTags('workouts')
 @Controller('users/:userId/workouts')
 export class WorkoutsController {
   constructor(private readonly workouts: WorkoutsService) {}
 
   @Post()
+  @ApiHeader({
+    name: 'Idempotency-Key',
+    required: false,
+    description: 'Replays the stored response for retries with the same body',
+  })
   async log(
     @Param() params: UserIdParamDto,
     @Body() dto: LogWorkoutsDto,

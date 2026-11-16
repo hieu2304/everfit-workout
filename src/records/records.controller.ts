@@ -1,8 +1,10 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { UserIdParamDto } from '../common/validation/user-id.dto';
 import { RecordsQueryDto } from './dto/records-query.dto';
 import { RecordsResponse, RecordsService } from './records.service';
 
+@ApiTags('records')
 @Controller('users/:userId/records')
 export class RecordsController {
   constructor(private readonly records: RecordsService) {}
