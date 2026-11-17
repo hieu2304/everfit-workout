@@ -3,24 +3,12 @@
 API for coaches to log client workouts and track history and personal records (PRs).
 Built with NestJS, PostgreSQL 16 and TypeORM.
 
-## Estimate (written before implementation, 2026-11-16)
+## Requirements
 
-| Block | Hours |
-|---|---|
-| Scaffold, config, Docker, logging, error filter | 2 |
-| Schema + migrations + units + exercises | 3 |
-| POST bulk + idempotency | 3 |
-| History + pagination | 2.5 |
-| Records + compare | 2.5 |
-| Integration tests | 2.5 |
-| Swagger | 1 |
-| Seed + benchmark + tuning | 2 |
-| README, diagram, AI_WORKFLOW | 2 |
-| **Total** | **~20.5** |
+- Docker with Compose v2 (enough to run the API)
+- Node.js 20 and npm (only for local development and tests)
 
-Actual time is reported at the end of this file.
-
-## Quick start
+## Getting started
 
 ```bash
 docker compose up --build
@@ -48,13 +36,6 @@ npm test            # unit tests (67)
 npm run test:int    # integration tests against a throwaway Postgres 16 via Testcontainers (48) — needs Docker
 npm run lint
 ```
-
-## AI tooling
-
-`CLAUDE.md` and `.claude/` hold the context the AI agent works with: project rules (code style, architecture,
-database, testing, git) in `.claude/rules/`, project skills (`add-endpoint`, `add-weight-unit`)
-and vetted third-party skills (see `.claude/skills/THIRD_PARTY.md`) in `.claude/skills/`, and tool permissions in
-`.claude/settings.json`.
 
 ## Architecture
 
@@ -281,7 +262,7 @@ at 00:00Z and no offset. A per-user timezone setting would remove the need for c
 
 **PRs computed on read.** No precomputed PR table, so no write-time locking, no drift when entries are
 edited or deleted, and period comparison uses the same query. Each PR is one `ORDER BY … LIMIT 1` index
-probe (< 0.1 ms on 200k sets, see below).
+probe.
 
 **Epley.** Applied literally as specified, `weight × (1 + reps/30)`, including `reps = 1`
 (→ 1.033 × weight). A common convention treats a 1-rep set as its own 1RM; that is a one-line change in
@@ -311,30 +292,6 @@ strings so `local_date` is never shifted by the server timezone.
 **No Kafka.** Nothing slow happens after a write, and an async pipeline would make PRs stale right after
 logging. See "At scale" for when a broker becomes worth it.
 
-## Performance
-
-Measured locally (API and PostgreSQL 16 in Docker on a laptop) against one user with 50,000 entries /
-200,000 sets: query plans with `EXPLAIN (ANALYZE, BUFFERS)`, HTTP load with autocannon (10 connections,
-10 s per scenario). The seed and load-test scripts are kept outside this repository.
-
-| Scenario | req/s | p50 ms | p97.5 ms | p99 ms |
-|---|---|---|---|---|
-| history: first page | 3939 | 2 | 5 | 7 |
-| history: partial name + lb | 3505 | 2 | 4 | 5 |
-| history: muscle group + 3 months | 2991 | 3 | 4 | 5 |
-| records: all-time | 2436 | 3 | 5 | 6 |
-| records: last month vs previous | 1609 | 6 | 7 | 8 |
-| log: 1 entry × 4 sets | 1394 | 6 | 11 | 15 |
-| log: 20 entries × 4 sets | 314 | 31 | 45 | 51 |
-| log: 100 entries × 4 sets (max batch) | 68 | 144 | 210 | 278 |
-
-Each POST is one transaction. A max-size batch writes 100 entries and 400 sets, so 68 req/s is about
-27,000 sets/s; latency grows with batch size, not with the 50k rows already stored.
-
-Query plans: every read query is an index scan, 0.09–0.25 ms execution.
-An empty future range picks the `(user_id, exercise_id, local_date)` index (0.16 ms) instead of
-walking the metric index.
-
 ## At scale
 
 - Partition `workout_sets`/`workout_entries` by hash of `user_id` once tables reach hundreds of millions of rows.
@@ -345,6 +302,24 @@ walking the metric index.
 - Per-user timezone in a profile table.
 - Authentication and coach→client authorization instead of trusting `userId`.
 
-## Actual time spent
+## Estimate (written before implementation, 2026-11-16)
 
-To be filled in by the author.
+| Block | Hours |
+|---|---|
+| Scaffold, config, Docker, logging, error filter | 2 |
+| Schema + migrations + units + exercises | 3 |
+| POST bulk + idempotency | 3 |
+| History + pagination | 2.5 |
+| Records + compare | 2.5 |
+| Integration tests | 2.5 |
+| Swagger | 1 |
+| Seed + benchmark + tuning | 2 |
+| README, diagram, AI_WORKFLOW | 2 |
+| **Total** | **~20.5** |
+
+## AI tooling
+
+`CLAUDE.md` and `.claude/` hold the context the AI agent works with: project rules (code style, architecture,
+database, testing, git) in `.claude/rules/`, project skills (`add-endpoint`, `add-weight-unit`)
+and vetted third-party skills (see `.claude/skills/THIRD_PARTY.md`) in `.claude/skills/`, and tool permissions in
+`.claude/settings.json`.
