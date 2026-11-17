@@ -74,6 +74,17 @@ npm run test:int    # integration tests against a throwaway Postgres 16 via Test
 npm run lint
 ```
 
+### Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `Bind for 0.0.0.0:5433 failed: port is already allocated` | Another Postgres uses 5433. Change the host side of `"5433:5432"` in `docker-compose.yml` and the port in `DATABASE_URL` in `.env`. |
+| `port 3000 is already allocated` | Change `"3000:3000"` in `docker-compose.yml` (or `PORT` in `.env` for `start:dev`). |
+| `Cannot connect to the Docker daemon` | Start Docker Desktop (or the daemon), then rerun the command. |
+| `npm run test:int` hangs on the first run | Testcontainers is pulling `postgres:16-alpine`; later runs reuse the image. |
+| `EBADENGINE` warning on `npm ci` | Use Node 20 (`nvm use` reads `.nvmrc`). |
+| `start:dev` exits with `"DATABASE_URL" is required` | Copy `.env.example` to `.env`; the other variables have defaults. |
+
 ## Architecture
 
 ```mermaid
