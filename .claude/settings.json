@@ -7,7 +7,6 @@
       "Bash(npm run lint:*)",
       "Bash(npm run format:*)",
       "Bash(npm run build:*)",
-      "Bash(npm run bench:*)",
       "Bash(npx tsc --noEmit:*)",
       "Bash(npx jest:*)",
       "Bash(docker compose ps:*)",

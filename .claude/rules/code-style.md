@@ -2,7 +2,6 @@
 paths:
   - "src/**/*.ts"
   - "test/**/*.ts"
-  - "scripts/**/*.mjs"
 ---
 
 # Code style

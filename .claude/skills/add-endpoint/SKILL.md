@@ -32,7 +32,7 @@ Run `npx jest -c test/jest-int.json --runInBand <feature>` and confirm it fails 
 2. Controller method: thin, `@ApiTags` on the class, `@ApiHeader` for custom headers.
 3. Service method: cross-field validation via `validationFailed([...])`, domain errors via `AppException`, unit conversion via `UnitRegistry`, mapping to plain response objects.
 4. Repository method using Repository/QueryBuilder; add `.limit(1)` for single rows; parameters always bound.
-5. If a new query shape: add an index in a new migration + entity metadata, then check `npm run bench:explain`.
+5. If a new query shape: add an index in a new migration + entity metadata, then confirm the plan with `EXPLAIN ANALYZE`.
 6. Pure logic (parsing, shaping, math) goes in a dependency-free file with its own `*.spec.ts`.
 7. Register providers/controllers in the module; import `TypeOrmModule.forFeature([...])` for new entities.
 

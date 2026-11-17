@@ -12,7 +12,6 @@ NestJS 10 + PostgreSQL 16 + TypeORM 0.3 API for logging workouts, browsing histo
 | Integration tests | `npm run test:int` (Testcontainers, needs Docker) |
 | Lint / format | `npm run lint` / `npm run format` |
 | Typecheck | `npx tsc --noEmit -p tsconfig.json` |
-| Benchmark | `npm run bench:seed && npm run bench:explain && npm run bench:run` |
 
 Definition of done for any change: typecheck, lint, `npm test` and `npm run test:int` all green.
 
@@ -27,7 +26,6 @@ src/exercises/    catalog, name normalization, seeder (config/exercises.json)
 src/workouts/     POST bulk logging, idempotency, GET history
 src/records/      personal records + period comparison
 test/             integration tests (*.int-spec.ts) + Testcontainers harness
-scripts/          benchmark seed, EXPLAIN plans, autocannon runner
 ```
 
 ## Rules
@@ -46,6 +44,5 @@ Project skills in `.claude/skills/`:
 
 - `add-endpoint` — add a route following the project's layering and error model
 - `add-weight-unit` — add a unit (e.g. stone) end to end
-- `run-benchmark` — seed 50k entries, capture plans, benchmark, read results
 - `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt` — smallest-change discipline and reviews (third-party, MIT)
 - `nestjs-patterns` — general NestJS reference (third-party, MIT); project rules win where they differ

@@ -52,7 +52,7 @@ npm run lint
 ## AI tooling
 
 `CLAUDE.md` and `.claude/` hold the context the AI agent works with: project rules (code style, architecture,
-database, testing, git) in `.claude/rules/`, project skills (`add-endpoint`, `add-weight-unit`, `run-benchmark`)
+database, testing, git) in `.claude/rules/`, project skills (`add-endpoint`, `add-weight-unit`)
 and vetted third-party skills (see `.claude/skills/THIRD_PARTY.md`) in `.claude/skills/`, and tool permissions in
 `.claude/settings.json`.
 
@@ -313,24 +313,25 @@ logging. See "At scale" for when a broker becomes worth it.
 
 ## Performance
 
-Seed one user with 50,000 entries / 200,000 sets, then benchmark (API in Docker, laptop, 10 connections, 10 s each):
-
-```bash
-docker compose up -d --build
-npm run bench:seed
-npm run bench:explain
-npm run bench:run
-```
+Measured locally (API and PostgreSQL 16 in Docker on a laptop) against one user with 50,000 entries /
+200,000 sets: query plans with `EXPLAIN (ANALYZE, BUFFERS)`, HTTP load with autocannon (10 connections,
+10 s per scenario). The seed and load-test scripts are kept outside this repository.
 
 | Scenario | req/s | p50 ms | p97.5 ms | p99 ms |
 |---|---|---|---|---|
-| history: first page | 1413 | 6 | 12 | 18 |
-| history: partial name + lb | 1329 | 7 | 10 | 11 |
-| history: muscle group + 3 months | 1365 | 7 | 10 | 16 |
-| records: all-time | 2120 | 4 | 6 | 7 |
-| records: last month vs previous | 1327 | 7 | 10 | 12 |
+| history: first page | 3939 | 2 | 5 | 7 |
+| history: partial name + lb | 3505 | 2 | 4 | 5 |
+| history: muscle group + 3 months | 2991 | 3 | 4 | 5 |
+| records: all-time | 2436 | 3 | 5 | 6 |
+| records: last month vs previous | 1609 | 6 | 7 | 8 |
+| log: 1 entry × 4 sets | 1394 | 6 | 11 | 15 |
+| log: 20 entries × 4 sets | 314 | 31 | 45 | 51 |
+| log: 100 entries × 4 sets (max batch) | 68 | 144 | 210 | 278 |
 
-Query plans (`docs/perf/explain-output.txt`): every query is an index scan, 0.09–0.25 ms execution.
+Each POST is one transaction. A max-size batch writes 100 entries and 400 sets, so 68 req/s is about
+27,000 sets/s; latency grows with batch size, not with the 50k rows already stored.
+
+Query plans: every read query is an index scan, 0.09–0.25 ms execution.
 An empty future range picks the `(user_id, exercise_id, local_date)` index (0.16 ms) instead of
 walking the metric index.
 

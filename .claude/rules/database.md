@@ -3,7 +3,6 @@ paths:
   - "src/database/**"
   - "src/**/*.repository.ts"
   - "src/**/*.store.ts"
-  - "scripts/**/*.sql"
 ---
 
 # Database
@@ -23,11 +22,11 @@ paths:
 
 ## Queries
 
-- Use Repository methods or QueryBuilder. Raw SQL is allowed only in migrations, the health ping and benchmark scripts.
+- Use Repository methods or QueryBuilder. Raw SQL is allowed only in migrations and the health ping.
 - `getOne()` does not add `LIMIT`; always add `.limit(1)` when you only need one row.
 - Use property paths (`e.localDate`) in QueryBuilder; bind every value as a parameter, never interpolate input.
 - Cast parameters with `CAST(:p AS type)`, not `:p::type` (TypeORM can misparse `::`).
-- Every new query path needs an index that matches its `WHERE` + `ORDER BY`. Confirm with `npm run bench:explain` on the 50k seed; no `Seq Scan` on `workout_sets` or `workout_entries`.
+- Every new query path needs an index that matches its `WHERE` + `ORDER BY`. Confirm with `EXPLAIN ANALYZE` on a large seed; no `Seq Scan` on `workout_sets` or `workout_entries`.
 - Pagination is keyset on `(local_date, performed_at, id)`; never `OFFSET`.
 
 ## Writes and concurrency
