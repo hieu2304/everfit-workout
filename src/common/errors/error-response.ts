@@ -15,6 +15,13 @@ const CODE_BY_STATUS: Record<number, ErrorCode> = {
   503: ErrorCode.SERVICE_UNAVAILABLE,
 };
 
+const exposedClientError = (exception: unknown): { status: number; message: string } | null => {
+  if (!(exception instanceof Error)) return null;
+  const { status, expose } = exception as Error & { status?: unknown; expose?: unknown };
+  if (expose !== true || typeof status !== 'number' || status < 400 || status >= 500) return null;
+  return { status, message: exception.message };
+};
+
 export const toErrorResponse = (exception: unknown): { status: number; body: ErrorBody } => {
   if (exception instanceof AppException) {
     return {
@@ -29,6 +36,17 @@ export const toErrorResponse = (exception: unknown): { status: number; body: Err
       body: {
         code: CODE_BY_STATUS[status] ?? ErrorCode.HTTP_ERROR,
         message: exception.message,
+        details: [],
+      },
+    };
+  }
+  const clientError = exposedClientError(exception);
+  if (clientError) {
+    return {
+      status: clientError.status,
+      body: {
+        code: CODE_BY_STATUS[clientError.status] ?? ErrorCode.HTTP_ERROR,
+        message: clientError.message,
         details: [],
       },
     };

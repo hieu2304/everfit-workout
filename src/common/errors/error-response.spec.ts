@@ -28,6 +28,25 @@ describe('toErrorResponse', () => {
     expect(result.body.code).toBe(code);
   });
 
+  it('maps exposed 4xx errors from Express middleware such as the body parser', () => {
+    const tooLarge = Object.assign(new Error('request entity too large'), {
+      status: 413,
+      statusCode: 413,
+      expose: true,
+      type: 'entity.too.large',
+    });
+    expect(toErrorResponse(tooLarge)).toEqual({
+      status: 413,
+      body: { code: 'PAYLOAD_TOO_LARGE', message: 'request entity too large', details: [] },
+    });
+  });
+
+  it('keeps non-exposed middleware errors as INTERNAL_ERROR', () => {
+    const hidden = Object.assign(new Error('secret'), { status: 500, expose: false });
+    expect(toErrorResponse(hidden).status).toBe(500);
+    expect(toErrorResponse(hidden).body.code).toBe('INTERNAL_ERROR');
+  });
+
   it('hides unknown errors behind INTERNAL_ERROR', () => {
     expect(toErrorResponse(new Error('db password is hunter2'))).toEqual({
       status: 500,

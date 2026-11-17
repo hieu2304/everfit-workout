@@ -4,9 +4,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { validationFailed } from './common/errors/app.exception';
 import { flattenValidationErrors } from './common/errors/validation-errors';
+import { requestIdMiddleware } from './common/http/request-id';
 
 export const configureApp = (app: NestExpressApplication): NestExpressApplication => {
   app.useLogger(app.get(Logger));
+  app.use(requestIdMiddleware);
   app.useBodyParser('json', { limit: '1mb' });
   app.useGlobalPipes(
     new ValidationPipe({
