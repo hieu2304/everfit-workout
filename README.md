@@ -20,6 +20,43 @@ docker compose up --build
 
 Migrations and the exercise catalog seed run automatically on boot.
 
+### Try it
+
+Log a workout (sending the same `Idempotency-Key` again replays the first response with `Idempotent-Replayed: true`):
+
+```bash
+curl -s -X POST localhost:3000/users/client-42/workouts \
+  -H 'content-type: application/json' \
+  -H 'Idempotency-Key: 7d3c1c2e-demo-0001' \
+  -d '{
+    "entries": [
+      {
+        "exerciseName": "Bench Press",
+        "date": "2026-11-16T07:30:00+07:00",
+        "sets": [
+          { "reps": 5, "weight": 100, "unit": "kg" },
+          { "reps": 3, "weight": 225, "unit": "lb" }
+        ]
+      }
+    ]
+  }'
+```
+
+Browse history (partial name match, weights converted to lb):
+
+```bash
+curl -s 'localhost:3000/users/client-42/workouts?exercise=bench&unit=lb&limit=20'
+```
+
+Personal records, all time and this month vs last month:
+
+```bash
+curl -s 'localhost:3000/users/client-42/records?exercise=Bench%20Press'
+curl -s 'localhost:3000/users/client-42/records?exercise=Bench%20Press&from=2026-11-01&to=2026-11-30&compareFrom=2026-10-01&compareTo=2026-10-31'
+```
+
+An unsupported unit returns `400` with `VALIDATION_FAILED` and the field path `entries[0].sets[0].unit`.
+
 ### Local development
 
 ```bash
