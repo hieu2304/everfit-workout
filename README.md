@@ -3,6 +3,16 @@
 API for coaches to log client workouts and track history and personal records (PRs).
 Built with NestJS, PostgreSQL 16 and TypeORM.
 
+## Contents
+
+- [Requirements](#requirements) and [Getting started](#getting-started): `docker compose up`, curl examples, local development, tests, troubleshooting
+- [Architecture](#architecture): module diagram and request flow
+- [API](#api): endpoints, request/response formats, [error codes](#errors)
+- [Database design](#database-design): schema, indexes and why PostgreSQL
+- [Key decisions and trade-offs](#key-decisions-and-trade-offs) and [At scale](#at-scale)
+- [Estimate](#estimate-written-before-implementation-2026-11-16): time estimate written before starting
+- [AI tooling](#ai-tooling): `CLAUDE.md`, rules and skills in `.claude/`
+
 ## Requirements
 
 - Docker with Compose v2 (enough to run the API)
@@ -69,8 +79,8 @@ npm run start:dev
 ### Tests
 
 ```bash
-npm test            # unit tests (67)
-npm run test:int    # integration tests against a throwaway Postgres 16 via Testcontainers (48) — needs Docker
+npm test            # unit tests (72)
+npm run test:int    # integration tests against a throwaway Postgres 16 via Testcontainers (50) — needs Docker
 npm run lint
 ```
 
